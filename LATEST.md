@@ -3,13 +3,13 @@
 | | |
 |---|---|
 | Branch | `main` |
-| Commit | `dcff906` |
+| Commit | `d40e2e7` |
 | Started by | push |
-| Time (UTC) | 2026-10-30 11:05 |
+| Time (UTC) | 2026-10-30 11:08 |
 | Prepare Arch Linux | success |
 | Check profiles | success |
 | Check scripts | success |
-| Full log | https://github.com/GFGMNET/Linux/actions/runs/41045119825 |
+| Full log | https://github.com/GFGMNET/Linux/actions/runs/41045317764 |
 
 ## Profile check
 
@@ -61,6 +61,7 @@ No problems.
   ok      resolves together (nvidia graphics, 24 packages)
   ok      resolves together (amd graphics, 22 packages)
   ok      resolves together (intel graphics, 23 packages)
+  ok      brave-bin (AUR)
   ok      bluetooth.service
   ok      power-profiles-daemon.service
 
@@ -88,6 +89,7 @@ No problems.
   ok      resolves together (nvidia graphics, 41 packages)
   ok      resolves together (amd graphics, 36 packages)
   ok      resolves together (intel graphics, 35 packages)
+  ok      visual-studio-code-bin (AUR)
   ok      com.jeffser.Alpaca (Flathub)
   ok      ollama.service
   ok      docker.service
