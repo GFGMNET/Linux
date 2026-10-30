@@ -1,0 +1,6 @@
+# AUR packages (community-built, see https://aur.archlinux.org/).
+# Built automatically with paru. Building takes time — prefer packages.txt
+# or flatpak.txt when the software is available there.
+#
+# Example:
+# visual-studio-code-bin

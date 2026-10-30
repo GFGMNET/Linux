@@ -1,0 +1,4 @@
+# Epic / GOG / Amazon games
+com.heroicgameslauncher.hgl
+# Manage Proton-GE versions
+net.davidotek.pupgui2

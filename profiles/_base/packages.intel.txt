@@ -1,0 +1,2 @@
+# Intel graphics — installed only when Intel graphics are detected.
+vulkan-intel intel-media-driver

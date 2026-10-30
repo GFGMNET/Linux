@@ -1,0 +1,4 @@
+# systemd services to enable at boot (after the packages are installed).
+#
+# Example:
+# cups.service

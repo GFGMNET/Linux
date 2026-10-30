@@ -1,0 +1,3 @@
+# Flathub apps for every PC (app ID from the Flathub URL).
+# Example:
+# org.signal.Signal

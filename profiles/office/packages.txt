@@ -1,0 +1,13 @@
+# Office suite (German + English spell checking)
+libreoffice-fresh libreoffice-fresh-de
+hunspell-de hunspell-en_us hyphen-de
+# fonts compatible with Microsoft Office documents
+ttf-carlito ttf-caladea
+# Mail & calendar
+thunderbird thunderbird-i18n-de
+# PDF
+pdfarranger
+# Printing & scanning
+cups cups-pdf system-config-printer print-manager skanlite
+# Passwords
+keepassxc

@@ -1,0 +1,5 @@
+# Flatpak apps from Flathub — use the app ID from the Flathub page URL.
+# https://flathub.org/apps/org.signal.Signal  ->  org.signal.Signal
+#
+# Example:
+# org.signal.Signal

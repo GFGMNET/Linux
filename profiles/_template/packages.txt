@@ -1,0 +1,8 @@
+# Official Arch packages (installed with pacman).
+# One or more names per line. Everything after # is a comment.
+# Find names at https://archlinux.org/packages/
+# A wrong name is skipped with a warning, it does not stop the install.
+#
+# Example:
+# firefox
+# vlc gimp

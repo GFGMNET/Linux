@@ -1,0 +1,6 @@
+# Launchers
+steam lutris
+# Windows games
+wine winetricks
+# Performance & overlay
+gamemode lib32-gamemode mangohud lib32-mangohud gamescope

@@ -1,0 +1,2 @@
+# AMD graphics — installed only when an AMD card is detected.
+vulkan-radeon

@@ -1,0 +1,10 @@
+# Local language models
+ollama
+# Python environment
+python python-pip python-pipx python-virtualenv
+python-numpy python-pandas python-matplotlib
+jupyterlab
+# Containers (many AI tools ship as containers)
+docker docker-compose
+# Large model files in Git
+git-lfs

@@ -1,0 +1,5 @@
+# NVIDIA GPU acceleration (driver itself comes from _base)
+ollama-cuda
+cuda cudnn
+python-pytorch-cuda
+nvidia-container-toolkit

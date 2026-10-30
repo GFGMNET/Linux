@@ -1,0 +1,3 @@
+# AMD GPU acceleration (ROCm)
+ollama-rocm
+python-pytorch-rocm

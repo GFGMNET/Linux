@@ -1,0 +1,3 @@
+# Flathub apps for the CAD profile.
+# Example:
+# com.ultimaker.cura

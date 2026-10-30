@@ -1,0 +1,14 @@
+[Unit]
+Description=Arch profiles: finish Flatpak installs that could not run during setup
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/var/lib/archprofiles/pending-flatpak.txt
+
+[Service]
+# Type=simple so the desktop is not held back while this runs in the background
+Type=simple
+ExecStart=/opt/archprofiles/installer/profile-apply.sh --firstboot
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

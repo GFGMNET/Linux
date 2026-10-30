@@ -1,0 +1,2 @@
+# Desktop chat app for local Ollama models
+com.jeffser.Alpaca

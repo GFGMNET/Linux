@@ -1,0 +1,2 @@
+# 32-bit Intel Vulkan driver for Steam/Proton
+lib32-vulkan-intel

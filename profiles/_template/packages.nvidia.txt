@@ -1,0 +1,2 @@
+# Installed ONLY when an NVIDIA graphics card is detected.
+# Same format as packages.txt. Also possible: packages.amd.txt, packages.intel.txt

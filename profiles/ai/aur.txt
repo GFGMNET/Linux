@@ -1,0 +1,3 @@
+# AUR packages for the AI profile.
+# Example:
+# visual-studio-code-bin

@@ -1,0 +1,2 @@
+# 32-bit NVIDIA libraries for Steam/Proton
+lib32-nvidia-utils

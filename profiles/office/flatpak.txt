@@ -1,0 +1,4 @@
+# Flathub apps for the Office profile.
+# Examples:
+# com.onlyoffice.desktopeditors
+# us.zoom.Zoom

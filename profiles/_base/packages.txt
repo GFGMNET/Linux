@@ -1,0 +1,12 @@
+# Installed on every PC, whatever profile is chosen.
+# (KDE Plasma, kernel, network, audio and git come from the installer itself.)
+
+firefox firefox-i18n-de
+# fonts
+noto-fonts noto-fonts-emoji ttf-dejavu ttf-liberation
+# tools
+htop fastfetch unzip p7zip wget rsync
+# hardware
+bluez bluez-utils power-profiles-daemon fwupd
+# KDE extras
+discover packagekit-qt6 kcalc filelight partitionmanager

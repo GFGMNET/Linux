@@ -1,0 +1,12 @@
+# 3D / mechanical CAD
+freecad openscad
+# 2D drafting
+librecad
+# Electronics (schematics + PCB) with symbol and 3D libraries
+kicad kicad-library kicad-library-3d
+# 3D modelling & rendering
+blender
+# 3D printing
+prusa-slicer
+# Vector graphics
+inkscape
