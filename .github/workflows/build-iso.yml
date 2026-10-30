@@ -1,0 +1,153 @@
+# Builds the ready-made installer ISO and publishes it under "Releases".
+#
+# Runs:  every month on the 2nd (Arch publishes a new ISO on the 1st),
+#        when iso/ or this file changes on main,
+#        and by hand: Actions -> "Build ISO" -> "Run workflow".
+#
+# Profile changes do NOT need a new ISO - the installer downloads the
+# newest profiles from this repository at every install.
+#
+# The build status is also saved to the branch "check-results" (iso-build.md).
+
+name: Build ISO
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 6 2 * *'    # 2nd of every month, 06:23 UTC
+  push:
+    branches: [main]
+    paths:
+      - 'iso/**'
+      - '.github/workflows/build-iso.yml'
+
+permissions:
+  contents: write           # to publish the release and save the status
+
+concurrency:
+  group: build-iso
+  cancel-in-progress: true
+
+jobs:
+  iso:
+    name: Build installer ISO
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged   # mkarchiso needs it to build the live system
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Prepare Arch Linux
+        id: prepare
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm --needed archiso git curl jq
+
+      - name: Get repository
+        uses: actions/checkout@v4
+
+      - name: Build ISO
+        id: build
+        env:
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          REPO_BRANCH: ${{ github.ref_name }}
+        run: |
+          set +e
+          bash iso/build-iso.sh out 2>&1 | tee /tmp/build.log
+          exit "${PIPESTATUS[0]}"
+
+      - name: Publish release
+        id: release
+        if: success() && github.ref_name == 'main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: iso-${{ steps.build.outputs.version }}-${{ github.run_number }}
+          name: Installer ISO ${{ steps.build.outputs.version }}
+          make_latest: true
+          files: |
+            out/*.iso
+            out/*.sha256
+          body: |
+            Ready-made Arch Linux profile installer, built from the newest Arch Linux ISO.
+
+            **Flash it:** Rufus -> select the ISO -> when asked, choose **"ISO Image mode"**.
+            Or attach the ISO to a virtual machine (UEFI must be enabled, Secure Boot off).
+
+            **Your own settings (user, password, Wi-Fi):** after flashing, create the folder
+            `archprofiles` on the stick and put your `settings.conf` in it
+            (template: `iso/settings.conf` in this repository). Without it the defaults are used:
+            user `user`, password `changeme`.
+
+            **Boot:** choose "Install Arch Linux (choose profile - ERASES the first disk)".
+
+            Profiles are downloaded fresh from this repository at every install - no new ISO
+            is needed when you change a profile.
+
+      - name: Remove old ISO releases (keep the newest 3)
+        if: success() && github.ref_name == 'main'
+        continue-on-error: true
+        env:
+          TOKEN: ${{ github.token }}
+          API: ${{ github.api_url }}/repos/${{ github.repository }}
+        run: |
+          curl -fsS -H "Authorization: Bearer $TOKEN" "$API/releases?per_page=100" \
+            | jq -r '[.[] | select(.tag_name | startswith("iso-"))] | sort_by(.created_at) | reverse | .[3:][] | "\(.id) \(.tag_name)"' \
+            | while read -r id tag; do
+                echo "Removing old release $tag"
+                curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$API/releases/$id"
+                curl -fsS -X DELETE -H "Authorization: Bearer $TOKEN" "$API/git/refs/tags/$tag" || true
+              done
+
+      - name: Save status to branch check-results
+        if: always()
+        continue-on-error: true
+        env:
+          TOKEN: ${{ github.token }}
+          PREPARE: ${{ steps.prepare.outcome }}
+          BUILD: ${{ steps.build.outcome }}
+          RELEASE: ${{ steps.release.outcome }}
+          ISO_NAME: ${{ steps.build.outputs.iso_name }}
+          BRANCH: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [[ $BUILD == success ]]; then status="OK - ISO built"; else status="FAILED"; fi
+          {
+            echo "# ISO build: $status"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Branch | \`$BRANCH\` |"
+            echo "| Commit | \`${GITHUB_SHA:0:7}\` |"
+            echo "| Started by | $EVENT |"
+            echo "| Time (UTC) | $(date -u '+%Y-%m-%d %H:%M') |"
+            echo "| Prepare | $PREPARE |"
+            echo "| Build | ${BUILD:-skipped} |"
+            echo "| Release | ${RELEASE:-skipped} |"
+            echo "| ISO | ${ISO_NAME:-none} |"
+            echo "| Full log | $RUN_URL |"
+            echo
+            if [[ -s /tmp/build.log ]]; then
+              echo "## Last 80 lines of the build log"
+              echo
+              echo '```'; tail -n 80 /tmp/build.log; echo '```'
+            fi
+          } > /tmp/iso-build.md
+          url="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          work=/tmp/check-results
+          rm -rf "$work"
+          if ! git clone --quiet --depth 1 --branch check-results "$url" "$work" 2>/dev/null; then
+            git init --quiet -b check-results "$work"
+            git -C "$work" remote add origin "$url"
+          fi
+          git -C "$work" config user.name "build-iso"
+          git -C "$work" config user.email "actions@users.noreply.github.com"
+          cp /tmp/iso-build.md "$work/iso-build.md"
+          cd "$work"
+          git add -A
+          git commit --quiet -m "ISO build ${GITHUB_SHA:0:7}: $status" || exit 0
+          git push --quiet origin check-results || { git pull --quiet --rebase origin check-results && git push --quiet origin check-results; }
