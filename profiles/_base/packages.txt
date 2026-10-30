@@ -10,5 +10,3 @@ htop fastfetch unzip p7zip wget rsync
 bluez bluez-utils power-profiles-daemon fwupd
 # KDE extras
 discover packagekit-qt6 kcalc filelight partitionmanager
-# Browser
-brave
