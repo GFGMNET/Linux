@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Update
+GenericName=Update this PC
+Comment=Install all updates and the newest profile software
+Exec=/opt/archprofiles/installer/ap-update.sh --interactive
+Terminal=true
+Icon=system-software-update
+Categories=System;Settings;

@@ -1,2 +1,6 @@
 bluetooth.service
 power-profiles-daemon.service
+# virus definitions update automatically
+clamav-freshclam.service
+# firewall
+ufw.service

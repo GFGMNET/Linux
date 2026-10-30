@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# new-profile.sh — create a new profile folder from profiles/_template.
+# new-profile.sh - create a new profile folder from profiles/_template.
 #
 #   tools/new-profile.sh dev "Development" "Programming tools"
 #
 # Then edit the files in profiles/dev/, commit and push. The new profile
-# shows up in the installer's list on the next install — nothing to change
+# shows up in the installer's list on the next install - nothing to change
 # on the USB stick. (Copying the _template folder by hand works just as well.)
 set -euo pipefail
 
@@ -22,4 +22,4 @@ fi
 
 cp -r "$ROOT/profiles/_template" "$ROOT/profiles/$NAME"
 sed -i "s|^NAME=.*|NAME=\"$TITLE\"|; s|^DESCRIPTION=.*|DESCRIPTION=\"$DESC\"|" "$ROOT/profiles/$NAME/profile.conf"
-echo "Created profiles/$NAME — edit packages.txt, flatpak.txt, aur.txt there, then commit and push."
+echo "Created profiles/$NAME - edit packages.txt, flatpak.txt, aur.txt there, then commit and push."

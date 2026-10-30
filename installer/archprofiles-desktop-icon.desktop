@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Update icon
+Comment=Puts the Update icon on the desktop (once)
+Exec=/opt/archprofiles/installer/ap-desktop-icon.sh
+NoDisplay=true
+X-KDE-autostart-phase=2

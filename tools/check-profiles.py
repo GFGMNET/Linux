@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""check-profiles.py — check every profile's package names before installing.
+"""check-profiles.py - check every profile's package names before installing.
 
 Works on any PC with Python 3 and internet (Linux, Windows, macOS):
     python3 check-profiles.py            check all profiles
@@ -89,26 +89,26 @@ def main():
                 ok, info = check_pacman(pkg)
                 if not ok:
                     problems += 1
-                    print(f"  ✗ {f.name}: {pkg} — {info}")
+                    print(f"  X {f.name}: {pkg} - {info}")
                 elif info == "multilib" and not multilib and d.name != "_base":
                     problems += 1
-                    print(f"  ! {f.name}: {pkg} is in [multilib] — set NEEDS_MULTILIB=yes in profile.conf")
+                    print(f"  ! {f.name}: {pkg} is in [multilib] - set NEEDS_MULTILIB=yes in profile.conf")
                 else:
-                    print(f"  ✓ {pkg} ({info})")
+                    print(f"  OK {pkg} ({info})")
         aur = read_list(d / "aur.txt")
         found = check_aur(aur)
         for pkg in aur:
             if pkg in found:
-                print(f"  ✓ {pkg} (AUR)")
+                print(f"  OK {pkg} (AUR)")
             else:
                 problems += 1
-                print(f"  ✗ aur.txt: {pkg} — not found in the AUR")
+                print(f"  X aur.txt: {pkg} - not found in the AUR")
         for app in read_list(d / "flatpak.txt"):
             if check_flatpak(app):
-                print(f"  ✓ {app} (Flathub)")
+                print(f"  OK {app} (Flathub)")
             else:
                 problems += 1
-                print(f"  ✗ flatpak.txt: {app} — not found on Flathub")
+                print(f"  X flatpak.txt: {app} - not found on Flathub")
     print(f"\n{'No problems found.' if not problems else f'{problems} problem(s) found.'}")
     return 1 if problems else 0
 

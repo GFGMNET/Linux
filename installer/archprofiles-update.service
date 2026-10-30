@@ -1,0 +1,13 @@
+[Unit]
+Description=Weekly automatic update (Arch profile installer)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+# give the PC 5 minutes after start-up before updating
+ExecStartPre=/usr/bin/sleep 300
+ExecStart=/opt/archprofiles/installer/ap-update.sh --auto
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=3h

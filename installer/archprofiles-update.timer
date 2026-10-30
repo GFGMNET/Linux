@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly automatic update (Arch profile installer)
+
+[Timer]
+OnCalendar=weekly
+# catch up after start-up if the PC was off on update day
+Persistent=true
+RandomizedDelaySec=30min
+
+[Install]
+WantedBy=timers.target

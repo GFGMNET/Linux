@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# profile-apply.sh  installs the software defined by one or more profiles.
+# profile-apply.sh - installs the software defined by one or more profiles.
 #
 # Runs on the INSTALLED system (the installer calls it inside arch-chroot).
 # After installation it is available as:   sudo profile-apply <profile>...
@@ -61,7 +61,7 @@ filter_known_packages() {
     if ap_pkg_resolve "$pkg" >/dev/null; then
       printf '%s\n' "$pkg"
     else
-      ap_warn "Package '$pkg' not found in the Arch repositories  skipped (typo, or is it an AUR package?)"
+      ap_warn "Package '$pkg' not found in the Arch repositories - skipped (typo, or is it an AUR package?)"
       FAILED+=("pacman:$pkg (not found)")
     fi
   done
@@ -75,7 +75,7 @@ install_pacman() {
   mapfile -t known < <(filter_known_packages "${pkgs[@]}")
   (( ${#known[@]} )) || return 0
   if ! pacman -S --needed --noconfirm -- "${known[@]}"; then
-    ap_warn "Batch install failed  retrying one by one to isolate the problem"
+    ap_warn "Batch install failed - retrying one by one to isolate the problem"
     local pkg
     for pkg in "${known[@]}"; do
       pacman -S --needed --noconfirm -- "$pkg" || FAILED+=("pacman:$pkg")
@@ -159,7 +159,7 @@ apply_profiles() {
   for p in "${profiles[@]}"; do
     dir=$PROFILES_DIR/$p
     [[ -d $dir ]] || { ap_err "Profile '$p' not found in $PROFILES_DIR"; FAILED+=("profile:$p"); continue; }
-    ap_log "Profile: $p  $(ap_conf_get "$dir/profile.conf" DESCRIPTION "")"
+    ap_log "Profile: $p - $(ap_conf_get "$dir/profile.conf" DESCRIPTION "")"
     ap_is_yes "$(ap_conf_get "$dir/profile.conf" NEEDS_MULTILIB no)" && multilib=1
     mapfile -t -O "${#pac[@]}"  pac  < <(ap_read_list "$dir/packages.txt")
     for v in "${vendors[@]}"; do

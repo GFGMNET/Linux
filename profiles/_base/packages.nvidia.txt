@@ -1,4 +1,4 @@
-# NVIDIA driver — installed only when an NVIDIA card is detected.
+# NVIDIA driver - installed only when an NVIDIA card is detected.
 # nvidia-open-dkms supports GeForce 16xx / RTX 20xx and newer, with any kernel.
 # Very old cards (GTX 10xx and older) need a legacy driver from the AUR instead.
 nvidia-open-dkms nvidia-utils nvidia-settings

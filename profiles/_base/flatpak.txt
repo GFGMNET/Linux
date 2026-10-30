@@ -1,3 +1,5 @@
 # Flathub apps for every PC (app ID from the Flathub URL).
 # Example:
 # org.signal.Signal
+# simple graphical virus scanner (uses ClamAV)
+com.gitlab.davem.ClamTk
