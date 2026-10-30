@@ -2,19 +2,28 @@
 # Runs on every change, on pull requests, every Monday morning (Arch
 # sometimes removes or renames packages) and by hand (Actions tab ->
 # "Check profiles" -> "Run workflow").
+#
 # Result: green check or red X next to each commit; details in the run.
+# The result is also saved to the branch "check-results" (one file per
+# branch, e.g. main.md, plus LATEST.md), so it can be read without a login.
 
 name: Check profiles
 
 on:
   push:
+    branches-ignore: [check-results]
   pull_request:
   workflow_dispatch:
   schedule:
     - cron: '17 5 * * 1'    # every Monday 05:17 UTC
 
 permissions:
-  contents: read
+  contents: write           # only used to save the result to "check-results"
+
+# one run at a time, so results never overwrite each other
+concurrency:
+  group: check-profiles
+  cancel-in-progress: false
 
 jobs:
   profiles:
@@ -22,22 +31,118 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:latest
     timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Prepare Arch Linux
+        id: prepare
         run: |
-          sed -i '/^#\[multilib\]/,/^#Include/ s/^#//' /etc/pacman.conf
+          # turn on the 32-bit [multilib] repository (Steam, lib32-*)
+          if ! grep -q '^\[multilib\]' /etc/pacman.conf; then
+            sed -i '/^#[[:space:]]*\[multilib\]/,/^#[[:space:]]*Include/ s/^#[[:space:]]*//' /etc/pacman.conf
+          fi
+          if ! grep -q '^\[multilib\]' /etc/pacman.conf; then
+            printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> /etc/pacman.conf
+          fi
           pacman-key --init
           pacman-key --populate archlinux
           pacman -Syu --noconfirm --needed git curl jq shellcheck
           pacman -Fy --noconfirm
+          # stop here with a clear message if [multilib] is still not usable
+          if [[ -z $(pacman -Sl multilib 2>/dev/null | head -n1) ]]; then
+            echo "::error::The [multilib] repository could not be enabled - 32-bit packages cannot be checked."
+            grep -n -A2 'multilib' /etc/pacman.conf || true
+            exit 1
+          fi
+          echo "[multilib] is enabled: $(pacman -Sl multilib | wc -l) packages"
 
       - name: Get repository
         uses: actions/checkout@v4
 
       - name: Check profiles
-        run: bash tools/ci-check.sh
+        id: profiles
+        run: |
+          set +e
+          bash tools/ci-check.sh 2>&1 | tee /tmp/check.log
+          rc=${PIPESTATUS[0]}
+          cp "$GITHUB_STEP_SUMMARY" /tmp/summary.md 2>/dev/null
+          exit "$rc"
 
       - name: Check scripts
-        if: always()
+        id: scripts
+        if: always() && steps.prepare.outcome == 'success'
         run: |
-          shellcheck -S warning -x installer/*.sh tools/*.sh profiles/*/setup.sh
+          set +e
+          shellcheck -S warning -x installer/*.sh tools/*.sh profiles/*/setup.sh 2>&1 | tee /tmp/shellcheck.txt
+          exit "${PIPESTATUS[0]}"
+
+      - name: Save result to branch check-results
+        if: always() && github.event_name != 'pull_request'
+        continue-on-error: true
+        env:
+          TOKEN: ${{ github.token }}
+          PREPARE: ${{ steps.prepare.outcome }}
+          PROFILES: ${{ steps.profiles.outcome }}
+          SCRIPTS: ${{ steps.scripts.outcome }}
+          BRANCH: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          command -v git >/dev/null || pacman -S --noconfirm --needed git
+          if [[ $PREPARE == success && $PROFILES == success && $SCRIPTS == success ]]; then
+            status="OK - all checks passed"
+          else
+            status="FAILED"
+          fi
+          name=$(printf '%s' "$BRANCH" | tr -c 'A-Za-z0-9._-' '_')
+          {
+            echo "# Check result: $status"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Branch | \`$BRANCH\` |"
+            echo "| Commit | \`${GITHUB_SHA:0:7}\` |"
+            echo "| Started by | $EVENT |"
+            echo "| Time (UTC) | $(date -u '+%Y-%m-%d %H:%M') |"
+            echo "| Prepare Arch Linux | $PREPARE |"
+            echo "| Check profiles | ${PROFILES:-skipped} |"
+            echo "| Check scripts | ${SCRIPTS:-skipped} |"
+            echo "| Full log | $RUN_URL |"
+            echo
+            if [[ -s /tmp/summary.md ]]; then cat /tmp/summary.md; else echo "_No profile check output (an earlier step failed)._"; fi
+            echo
+            echo "## Script check (shellcheck)"
+            echo
+            if [[ -s /tmp/shellcheck.txt ]]; then
+              echo '```'; cat /tmp/shellcheck.txt; echo '```'
+            elif [[ $SCRIPTS == success ]]; then
+              echo "No problems."
+            else
+              echo "_Not run._"
+            fi
+            if [[ -s /tmp/check.log ]]; then
+              echo
+              echo "## Full profile check output"
+              echo
+              echo '```'; cat /tmp/check.log; echo '```'
+            fi
+          } > /tmp/result.md
+
+          url=${RESULTS_REMOTE:-"https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"}
+          work=/tmp/check-results
+          rm -rf "$work"
+          if git clone --quiet --depth 1 --branch check-results "$url" "$work" 2>/dev/null; then :; else
+            git init --quiet -b check-results "$work"
+            git -C "$work" remote add origin "$url"
+            printf '# Check results\n\nWritten automatically by the "Check profiles" workflow.\nOne file per branch; LATEST.md is the newest run.\n' > "$work/README.md"
+          fi
+          git -C "$work" config user.name "check-profiles"
+          git -C "$work" config user.email "actions@users.noreply.github.com"
+          cp /tmp/result.md "$work/$name.md"
+          cp /tmp/result.md "$work/LATEST.md"
+          cd "$work"
+          git add -A
+          git commit --quiet -m "Result for $BRANCH ${GITHUB_SHA:0:7}: $status" || exit 0
+          git push --quiet origin check-results || { git pull --quiet --rebase origin check-results && git push --quiet origin check-results; }
+          echo "Result saved to branch check-results ($name.md, LATEST.md)"
