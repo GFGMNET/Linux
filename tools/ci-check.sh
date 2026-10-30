@@ -10,7 +10,7 @@
 #   - pacman can resolve all packages together (no conflicts), separately
 #     for no / NVIDIA / AMD / Intel graphics
 #   - every name in aur.txt exists in the AUR
-#   - every ID in flatpak.txt exists on Flathuba
+#   - every ID in flatpak.txt exists on Flathub
 #   - every service in services.txt is provided by some package (warning)
 #   - setup.sh has no syntax errors
 #
@@ -57,30 +57,34 @@ entries() {
   done < "$file"
 }
 
-pkg_repo() {  # prints the repository of an official package, empty if unknown
-  pacman -Si -- "$1" 2>/dev/null | awk -F': *' '/^Repository/ {print $2; exit}'
+pkg_repo() {  # prints the repository of an official package/provider, empty if unknown
+  ap_pkg_resolve "$1" | awk 'NR==1 {print $1}'
 }
 
 check_pacman_lists() {
-  local prof=$1 dir=$PROFILES/$1 needs_ml=$2 f ln pkg repo
+  local prof=$1 dir=$PROFILES/$1 needs_ml=$2 f ln pkg res first real
   for f in "$dir"/packages*.txt; do
     [[ -f $f ]] || continue
     while IFS=$'\t' read -r ln pkg; do
-      repo=$(pkg_repo "$pkg")
-      if [[ -z $repo ]]; then
-        if pacman -Sg -- "$pkg" &>/dev/null; then
-          echo "  ok      $pkg (group)"; continue
-        fi
+      if ! res=$(ap_pkg_resolve "$pkg") || [[ -z $res ]]; then
         local hint="not found in the Arch repositories"
         if aur_exists "$pkg"; then hint="$hint - it is an AUR package, move it to aur.txt"; fi
         report error "$f" "$ln" "'$pkg' $hint"
         continue
       fi
-      if [[ $repo == multilib* ]] && ! ap_is_yes "$needs_ml"; then
+      if grep -q '^multilib' <<<"$res" && ! ap_is_yes "$needs_ml"; then
         report error "$f" "$ln" "'$pkg' is a 32-bit [multilib] package - set NEEDS_MULTILIB=yes in $dir/profile.conf"
         continue
       fi
-      echo "  ok      $pkg ($repo)"
+      first=$(head -n1 <<<"$res"); real=${first#* }
+      if (( $(wc -l <<<"$res") > 1 )); then
+        echo "  ok      $pkg (group, $(wc -l <<<"$res") packages)"
+      elif [[ $real != "$pkg" ]]; then
+        echo "  ok      $pkg -> $real (${first%% *})"
+        report warning "$f" "$ln" "'$pkg' is now provided by '$real' - consider writing '$real' instead"
+      else
+        echo "  ok      $pkg (${first%% *})"
+      fi
     done < <(entries "$f")
   done
 }
@@ -152,7 +156,7 @@ check_resolution() {
     [[ $prof != _base ]] && files+=("$PROFILES/$prof/packages.txt" "$PROFILES/$prof/packages.$v.txt")
     for f in "${files[@]}"; do
       while IFS=$'\t' read -r ln pkg; do
-        if [[ -n $(pkg_repo "$pkg") ]] || pacman -Sg -- "$pkg" &>/dev/null; then pkgs+=("$pkg"); fi
+        if ap_pkg_resolve "$pkg" >/dev/null; then pkgs+=("$pkg"); fi
       done < <(entries "$f")
     done
     (( ${#pkgs[@]} )) || continue
