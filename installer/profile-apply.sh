@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# profile-apply.sh — installs the software defined by one or more profiles.
+# profile-apply.sh  installs the software defined by one or more profiles.
 #
 # Runs on the INSTALLED system (the installer calls it inside arch-chroot).
 # After installation it is available as:   sudo profile-apply <profile>...
@@ -50,17 +50,18 @@ usage() { sed -n '2,25p' "$SELF" | sed 's/^# \{0,1\}//'; }
 enable_multilib() {
   if grep -q '^\[multilib\]' /etc/pacman.conf 2>/dev/null; then return 0; fi
   ap_log "Enabling the [multilib] repository (32-bit libraries)"
-  run sed -i '/^#\[multilib\]/,/^#Include/ s/^#//' /etc/pacman.conf
+  if (( DRY_RUN )); then echo "   [dry-run] enable [multilib] in /etc/pacman.conf"; return 0; fi
+  ap_enable_multilib /etc/pacman.conf || { ap_err "Could not enable [multilib] - 32-bit packages will be skipped"; FAILED+=("multilib"); }
 }
 
 # Only keep names pacman actually knows, so one typo can't break the install.
 filter_known_packages() {
   local pkg
   for pkg in "$@"; do
-    if pacman -Si -- "$pkg" &>/dev/null || pacman -Sg -- "$pkg" &>/dev/null; then
+    if ap_pkg_resolve "$pkg" >/dev/null; then
       printf '%s\n' "$pkg"
     else
-      ap_warn "Package '$pkg' not found in the Arch repositories — skipped (typo, or is it an AUR package?)"
+      ap_warn "Package '$pkg' not found in the Arch repositories  skipped (typo, or is it an AUR package?)"
       FAILED+=("pacman:$pkg (not found)")
     fi
   done
@@ -74,7 +75,7 @@ install_pacman() {
   mapfile -t known < <(filter_known_packages "${pkgs[@]}")
   (( ${#known[@]} )) || return 0
   if ! pacman -S --needed --noconfirm -- "${known[@]}"; then
-    ap_warn "Batch install failed — retrying one by one to isolate the problem"
+    ap_warn "Batch install failed  retrying one by one to isolate the problem"
     local pkg
     for pkg in "${known[@]}"; do
       pacman -S --needed --noconfirm -- "$pkg" || FAILED+=("pacman:$pkg")
@@ -158,7 +159,7 @@ apply_profiles() {
   for p in "${profiles[@]}"; do
     dir=$PROFILES_DIR/$p
     [[ -d $dir ]] || { ap_err "Profile '$p' not found in $PROFILES_DIR"; FAILED+=("profile:$p"); continue; }
-    ap_log "Profile: $p — $(ap_conf_get "$dir/profile.conf" DESCRIPTION "")"
+    ap_log "Profile: $p  $(ap_conf_get "$dir/profile.conf" DESCRIPTION "")"
     ap_is_yes "$(ap_conf_get "$dir/profile.conf" NEEDS_MULTILIB no)" && multilib=1
     mapfile -t -O "${#pac[@]}"  pac  < <(ap_read_list "$dir/packages.txt")
     for v in "${vendors[@]}"; do
