@@ -3,13 +3,13 @@
 | | |
 |---|---|
 | Branch | `main` |
-| Commit | `ff30719` |
+| Commit | `41caf25` |
 | Started by | push |
-| Time (UTC) | 2026-10-30 11:43 |
+| Time (UTC) | 2026-10-30 11:58 |
 | Prepare Arch Linux | success |
 | Check profiles | success |
 | Check scripts | success |
-| Full log | https://github.com/GFGMNET/Linux/actions/runs/41049728949 |
+| Full log | https://github.com/GFGMNET/Linux/actions/runs/41051539836 |
 
 ## Profile check
 
