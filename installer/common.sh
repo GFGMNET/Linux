@@ -67,6 +67,27 @@ ap_list_profiles() {
   done
 }
 
+# ap_pkg_resolve NAME
+# Asks pacman what installing NAME would install, without installing it.
+# Prints "<repo> <package>" per line. Works for normal packages, for names
+# that point to another package (e.g. p7zip -> 7zip) and for groups.
+# Returns non-zero when pacman does not know the name.
+ap_pkg_resolve() {
+  pacman -S --print --nodeps --nodeps --noconfirm --print-format '%r %n' -- "$1" 2>/dev/null
+}
+
+# ap_enable_multilib [PACMAN_CONF]
+# Turns on the 32-bit [multilib] repository. Uncomments the standard
+# section, or adds it when the file has none. Returns 0 when enabled.
+ap_enable_multilib() {
+  local conf=${1:-/etc/pacman.conf}
+  grep -q '^\[multilib\]' "$conf" && return 0
+  sed -i '/^#[[:space:]]*\[multilib\]/,/^#[[:space:]]*Include/ s/^#[[:space:]]*//' "$conf"
+  grep -q '^\[multilib\]' "$conf" && return 0
+  printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' >> "$conf"
+  grep -q '^\[multilib\]' "$conf"
+}
+
 # ap_gpu_vendors
 # Prints detected GPU vendors (nvidia, amd, intel), one per line.
 # Uses sysfs only, so it needs no extra packages.
