@@ -3,22 +3,21 @@
 | | |
 |---|---|
 | Branch | `main` |
-| Commit | `b854379` |
+| Commit | `f677a1f` |
 | Started by | push |
-| Time (UTC) | 2026-10-30 12:00 |
+| Time (UTC) | 2026-10-30 12:29 |
 | Prepare Arch Linux | success |
 | Check profiles | success |
 | Check scripts | success |
-| Full log | https://github.com/GFGMNET/Linux/actions/runs/41051861216 |
+| Full log | https://github.com/GFGMNET/Linux/actions/runs/41055229599 |
 
 ## Profile check
 
 | Level | Where | Problem |
 |---|---|---|
-| warning | `profiles/_base/packages.txt` line 8 | 'p7zip' is now provided by '7zip' - consider writing '7zip' instead |
 | OK | all profiles | no errors |
 
-**Result: all profiles OK** (1 warning(s))
+**Result: all profiles OK** (0 warning(s))
 
 ## Script check (shellcheck)
 
@@ -44,8 +43,7 @@ No problems.
   ok      htop (extra)
   ok      fastfetch (extra)
   ok      unzip (extra)
-  ok      p7zip -> 7zip (extra)
-::warning file=profiles/_base/packages.txt,line=8::'p7zip' is now provided by '7zip' - consider writing '7zip' instead
+  ok      7zip (extra)
   ok      wget (extra)
   ok      rsync (extra)
   ok      bluez (extra)
@@ -57,13 +55,21 @@ No problems.
   ok      kcalc (extra)
   ok      filelight (extra)
   ok      partitionmanager (extra)
-  ok      resolves together (none graphics, 21 packages)
-  ok      resolves together (nvidia graphics, 24 packages)
-  ok      resolves together (amd graphics, 22 packages)
-  ok      resolves together (intel graphics, 23 packages)
+  ok      libnotify (extra)
+  ok      xdg-user-dirs (extra)
+  ok      clamav (extra)
+  ok      ufw (extra)
+  ok      resolves together (none graphics, 25 packages)
+  ok      resolves together (nvidia graphics, 28 packages)
+  ok      resolves together (amd graphics, 26 packages)
+  ok      resolves together (intel graphics, 27 packages)
   ok      brave-bin (AUR)
+  ok      com.gitlab.davem.ClamTk (Flathub)
   ok      bluetooth.service
   ok      power-profiles-daemon.service
+  ok      clamav-freshclam.service
+  ok      ufw.service
+  ok      setup.sh syntax
 
 == ai: Local AI: Ollama, Python, Jupyter, GPU acceleration
   ok      ollama-rocm (extra)
@@ -85,10 +91,10 @@ No problems.
   ok      docker (extra)
   ok      docker-compose (extra)
   ok      git-lfs (extra)
-  ok      resolves together (none graphics, 33 packages)
-  ok      resolves together (nvidia graphics, 41 packages)
-  ok      resolves together (amd graphics, 36 packages)
-  ok      resolves together (intel graphics, 35 packages)
+  ok      resolves together (none graphics, 37 packages)
+  ok      resolves together (nvidia graphics, 45 packages)
+  ok      resolves together (amd graphics, 40 packages)
+  ok      resolves together (intel graphics, 39 packages)
   ok      visual-studio-code-bin (AUR)
   ok      com.jeffser.Alpaca (Flathub)
   ok      ollama.service
@@ -105,10 +111,10 @@ No problems.
   ok      blender (extra)
   ok      prusa-slicer (extra)
   ok      inkscape (extra)
-  ok      resolves together (none graphics, 30 packages)
-  ok      resolves together (nvidia graphics, 33 packages)
-  ok      resolves together (amd graphics, 31 packages)
-  ok      resolves together (intel graphics, 32 packages)
+  ok      resolves together (none graphics, 34 packages)
+  ok      resolves together (nvidia graphics, 37 packages)
+  ok      resolves together (amd graphics, 35 packages)
+  ok      resolves together (intel graphics, 36 packages)
 
 == games: Steam, Lutris, Heroic, Wine, GameMode, MangoHud
   ok      lib32-vulkan-radeon (multilib)
@@ -123,10 +129,10 @@ No problems.
   ok      mangohud (extra)
   ok      lib32-mangohud (multilib)
   ok      gamescope (extra)
-  ok      resolves together (none graphics, 30 packages)
-  ok      resolves together (nvidia graphics, 34 packages)
-  ok      resolves together (amd graphics, 32 packages)
-  ok      resolves together (intel graphics, 33 packages)
+  ok      resolves together (none graphics, 34 packages)
+  ok      resolves together (nvidia graphics, 38 packages)
+  ok      resolves together (amd graphics, 36 packages)
+  ok      resolves together (intel graphics, 37 packages)
   ok      com.heroicgameslauncher.hgl (Flathub)
   ok      net.davidotek.pupgui2 (Flathub)
   ok      setup.sh syntax
@@ -148,11 +154,11 @@ No problems.
   ok      print-manager (extra)
   ok      skanlite (extra)
   ok      keepassxc (extra)
-  ok      resolves together (none graphics, 37 packages)
-  ok      resolves together (nvidia graphics, 40 packages)
-  ok      resolves together (amd graphics, 38 packages)
-  ok      resolves together (intel graphics, 39 packages)
+  ok      resolves together (none graphics, 41 packages)
+  ok      resolves together (nvidia graphics, 44 packages)
+  ok      resolves together (amd graphics, 42 packages)
+  ok      resolves together (intel graphics, 43 packages)
   ok      cups.service
 
-All profiles OK (1 warning(s)).
+All profiles OK (0 warning(s)).
 ```
