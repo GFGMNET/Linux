@@ -1,0 +1,43 @@
+# Checks all profiles automatically inside a real Arch Linux system.
+# Runs on every change, on pull requests, every Monday morning (Arch
+# sometimes removes or renames packages) and by hand (Actions tab ->
+# "Check profiles" -> "Run workflow").
+# Result: green check or red X next to each commit; details in the run.
+
+name: Check profiles
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * 1'    # every Monday 05:17 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  profiles:
+    name: Profiles (real Arch Linux)
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    timeout-minutes: 20
+    steps:
+      - name: Prepare Arch Linux
+        run: |
+          sed -i '/^#\[multilib\]/,/^#Include/ s/^#//' /etc/pacman.conf
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm --needed git curl jq shellcheck
+          pacman -Fy --noconfirm
+
+      - name: Get repository
+        uses: actions/checkout@v4
+
+      - name: Check profiles
+        run: bash tools/ci-check.sh
+
+      - name: Check scripts
+        if: always()
+        run: |
+          shellcheck -S warning -x installer/*.sh tools/*.sh profiles/*/setup.sh
