@@ -1,3 +1,4 @@
 # AUR packages for every PC. Building takes time — use sparingly.
 # Example:
 # visual-studio-code-bin
+brave-bin
