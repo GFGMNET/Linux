@@ -27,6 +27,8 @@ exec > >(tee -a "$LOG") 2>&1
 
 on_error() {
   local line=$1
+  # only the main installer stops; helper subshells report through it
+  [[ $BASHPID == "$$" ]] || return 0
   echo
   ap_err "Installation stopped (install.sh line $line)."
   ap_err "Full log: $LOG"
@@ -69,10 +71,15 @@ banner() {
 
 # ------------------------------------------------------------- profiles ----
 profiles_from_cmdline() {
+  # prints the profile(s) from the boot option archprofile=..., or nothing
   local word
   for word in $(</proc/cmdline); do
-    [[ $word == archprofile=* ]] && { printf '%s\n' "${word#archprofile=}" | tr ',+' '  '; return; }
+    if [[ $word == archprofile=* ]]; then
+      printf '%s\n' "${word#archprofile=}" | tr ',+' '  '
+      return 0
+    fi
   done
+  return 0
 }
 
 # Arrow-key menu on the console.  Up/Down move, Space marks several,
@@ -124,7 +131,10 @@ choose_profiles_menu() {
 boot_disk() {
   local src
   src=$(findmnt -no SOURCE /run/archiso/bootmnt 2>/dev/null || true)
-  [[ -n $src ]] && lsblk -npo PKNAME "$src" 2>/dev/null | head -n1
+  if [[ -n $src ]]; then
+    lsblk -npo PKNAME "$src" 2>/dev/null | head -n1 || true
+  fi
+  return 0
 }
 
 find_target_disk() {
@@ -173,7 +183,8 @@ connect_network() {
   ap_log "Checking internet connection"
   local i
   for i in $(seq 1 30); do
-    if ping -c1 -W2 archlinux.org &>/dev/null; then ap_ok "Online."; return 0; fi
+    # HTTPS instead of ping: many networks block ping (ICMP)
+    if curl -fsS -o /dev/null --max-time 5 https://archlinux.org; then ap_ok "Online."; return 0; fi
     sleep 2
   done
   ap_err "No internet connection. Plug in a network cable, or set WIFI_SSID / WIFI_PASSWORD in settings.conf."
